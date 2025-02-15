@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock, User } from "lucide-react";
+import { User, Mail, Lock, Edit3 } from "lucide-react";
+import { Link } from "react-router-dom";
 import BlurContainer from "../components/blurContainer";
 import Button from "../components/button";
 import Footer from "../components/footer";
@@ -84,6 +85,35 @@ const EditProfile = () => {
       setError("Server error, please try again later.");
     }
   };
+  const handleDelete = async () => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete your account? This action cannot be undone."
+      )
+    ) {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/users/profile",
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          localStorage.removeItem("token");
+          navigate("/Register");
+        } else {
+          setError("Failed to delete account.");
+        }
+      } catch (err) {
+        setError("Server error, please try again later.");
+      }
+    }
+  };
   return (
     <div className="flex flex-col min-h-screen">
       <div
@@ -157,6 +187,13 @@ const EditProfile = () => {
               className="w-full bg-transparent hover:bg-yellow-500 text-yellow-500 hover:text-white border-2 border-yellow-500 font-semibold py-3 px-6 rounded-full transition-all duration-300"
             >
               Save Changes
+            </Button>
+            <Button
+              onClick={handleDelete}
+              type="button"
+              className="w-full bg-transparent hover:bg-red-500 text-red-500  hover:text-white border-2 border-red-500 font-semibold py-3 px-6 rounded-full transition-all duration-300"
+            >
+              Delete Account
             </Button>
           </form>
         </BlurContainer>
