@@ -1,0 +1,37 @@
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YjA5NTNhNjZmMDc1ZjViNTRkN2I0YyIsImVtYWlsIjoiam9obmRvZUBleGFtcGxlLmNvbSIsImlhdCI6MTczOTYyNTc5MSwiZXhwIjoxNzM5NjI5MzkxfQ.qa8pLO5poznrQ9Zs9J9gVmfqxomZcxXL0GCOqvkkMI8
+### Register a User
+POST http://localhost:5000/api/users/register
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "johndoe@example.com",
+  "password": "password123"
+}
+
+### Login User
+POST http://localhost:5000/api/users/login
+Content-Type: application/json
+
+{
+  "email": "johndoe@example.com",
+  "password": "password123"
+}
+
+### Get User Profile (Protected)
+GET http://localhost:5000/api/users/profile
+Authorization: Bearer {{token}}
+
+### Update User Profile (Protected)
+PUT http://localhost:5000/api/users/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "firstName": "UpdatedJohn"
+}
+
+### Delete User (Protected)
+DELETE http://localhost:5000/api/users/profile
+Authorization: Bearer {{token}}
