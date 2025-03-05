@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import Button from "../components/button";
 import Footer from "../components/footer";
+import GoogleAuthButton from "../components/GoogleAuthButton";
 import BlurContainer from "../components/blurContainer";
 
 function Register() {
@@ -161,6 +162,15 @@ function Register() {
                   </label>
                 </div>
               </div>
+              <div className="relative my-4 flex items-center justify-center">
+                <div className="absolute w-full border-t border-yellow-500">
+                  {" "}
+                  <div className="relative px-4 my-2 mb-2 text-sm text-white items-center flex justify-center">
+                    Or continue with
+                  </div>
+                </div>
+              </div>
+              <GoogleAuthButton />
               <Button className="w-full bg-transparent hover:bg-yellow-500 text-yellow-500 hover:text-white border-2 border-yellow-500 font-semibold py-3 px-6 rounded-full transition-all duration-300">
                 Create Account
               </Button>

@@ -11,27 +11,27 @@ function ResetPasswordEmail() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
-      const response = await fetch("http://localhost:5000/api/auth/Reset", {
+      const response = await fetch("http://localhost:5000/api/users/request-reset", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email }),
       });
-
+  
       const data = await response.json();
       if (response.ok) {
-        navigate("/"); // Redirect after success
+        localStorage.setItem("resetEmail", email); // Store email for verification step
       } else {
-        setError(data.message || "Reset failed");
+        setError(data.message || "Failed to send reset email");
       }
     } catch (err) {
       setError("Server error, please try again later.");
     }
   };
-
+  
   return (
     <div className="flex flex-col min-h-screen items-center justify-center">
       {/* Background Image */}

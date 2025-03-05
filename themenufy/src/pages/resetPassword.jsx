@@ -4,25 +4,32 @@ import Button from "../components/button";
 import Footer from "../components/footer";
 import BlurContainer from "../components/blurContainer";
 
-function Reset() {
-  const [email, setEmail] = useState("");
+function ResetPassword() {
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const email = localStorage.getItem("resetEmail");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+  
+    const token = new URLSearchParams(window.location.search).get("token"); // Get token from URL
+  
     try {
-      const response = await fetch("http://localhost:5000/api/auth/Reset", {
+      const response = await fetch("http://localhost:5000/api/users/reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ token, password }), // "password" must match backend
       });
-
+  
       const data = await response.json();
       if (response.ok) {
-        localStorage.setItem("token", data.token);
-        navigate("/");
+        navigate("/login");
       } else {
         setError(data.message || "Reset failed");
       }
@@ -47,9 +54,7 @@ function Reset() {
         {/* Blur Container */}
         <BlurContainer className="w-full max-w-md sm:max-w-lg lg:max-w-xl p-8 sm:p-10 rounded-2xl bg-white/10 backdrop-blur-xl">
           <div className="flex flex-col items-center space-y-6">
-            <h1 className="text-3xl font-bold text-white">
-              Reset Your Password
-            </h1>
+            <h1 className="text-3xl font-bold text-white">Reset Your Password</h1>
 
             {/* Display Error Message */}
             {error && <p className="text-red-500 text-center">{error}</p>}
@@ -59,13 +64,11 @@ function Reset() {
               <div className="space-y-4">
                 {/* New Password Input */}
                 <div>
-                  <label className="block text-white text-sm font-medium mb-2">
-                    New Password
-                  </label>
+                  <label className="block text-white text-sm font-medium mb-2">New Password</label>
                   <input
                     type="password"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-4 py-3 bg-white/10 border border-white/30 rounded-lg backdrop-blur-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/60 transition"
                     placeholder="Enter your new password"
                     required
@@ -74,13 +77,11 @@ function Reset() {
 
                 {/* Confirm Password Input */}
                 <div>
-                  <label className="block text-white text-sm font-medium mb-2">
-                    Confirm Password
-                  </label>
+                  <label className="block text-white text-sm font-medium mb-2">Confirm Password</label>
                   <input
                     type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     className="w-full px-4 py-3 bg-white/10 border border-white/30 rounded-lg backdrop-blur-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/60 transition"
                     placeholder="Confirm your new password"
                     required
@@ -106,4 +107,4 @@ function Reset() {
   );
 }
 
-export default Reset;
+export default ResetPassword;

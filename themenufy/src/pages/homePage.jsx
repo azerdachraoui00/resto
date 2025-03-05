@@ -32,7 +32,7 @@ const HomePage = () => {
         }}
       />
       <div className="relative min-h-screen flex flex-col items-center justify-center py-10 px-4 sm:px-6 lg:px-16">
-        <div className="w-full max-w-7xl">
+        <div className="w-full max-w-7xl pt-8">
           <BlurContainer
             blur="xl"
             opacity={50}
@@ -96,7 +96,6 @@ const HomePage = () => {
                 ))}
               </div>
             </div>
-            <Footer />
           </BlurContainer>
         </div>
       </div>

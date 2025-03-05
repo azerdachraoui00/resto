@@ -1,13 +1,14 @@
 import React from "react";
 
 const Footer = () => {
+  const currentYear = new Date().getFullYear();
   return (
-    <footer className="bg-transparent text-white text-center p-4 relative bottom-0 w-full">
-      <p className="text-sm">
-        &copy; {new Date().getFullYear()} TheMenuFy. All rights reserved.
-      </p>
+    <footer className="absolute bottom-0 w-full text-white backdrop-transparent text-center pt-5">
+      <p className="text-sm">© {currentYear} TheMenuFy. All rights reserved.</p>
     </footer>
   );
 };
 
 export default Footer;
+
+

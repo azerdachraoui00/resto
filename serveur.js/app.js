@@ -10,9 +10,10 @@ app.use(express.json()); // Middleware to parse JSON
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // 🚀 Autorise uniquement ton frontend
+    origin: "*", // 🚀 Autorise uniquement ton frontend
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 

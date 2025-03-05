@@ -6,9 +6,16 @@ const Navbar = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Remove token
+    localStorage.removeItem("role");  // Remove role
+    navigate("/login"); // Redirect to login page
+  };
+  
+  
 
   return (
-    <nav className="absolute z-50 top-0 left-0 w-full px-6 md:px-12 py-4 flex items-center justify-between bg-transparent">
+    <nav className="fixed top-0 left-0 w-full px-6 md:px-12 py-4 flex items-center justify-between bg-transparent z-50">
       {/* Logo Section */}
       <h1 className="text-2xl font-bold text-white">TheMenuFy</h1>
 
@@ -30,6 +37,12 @@ const Navbar = () => {
           className="text-white hover:text-yellow-500 transition"
         >
           Login
+        </Link>
+        <Link
+          to="/code"
+          className="text-white hover:text-yellow-500 transition"
+        >
+          Code
         </Link>
         <Link
           to="/Register"
@@ -90,7 +103,8 @@ const Navbar = () => {
                 Settings
               </Link>
               <Link
-                to="/logout"
+                to="/login"
+                onClick={handleLogout}
                 className="block px-4 py-2 text-gray-700 hover:text-yellow-500"
               >
                 Logout
