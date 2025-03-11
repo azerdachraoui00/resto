@@ -67,128 +67,162 @@ function Register() {
 
   return (
     <div className="flex flex-col min-h-screen">
+    {/* Background */}
+    <div
+      className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10"
+      style={{
+        backgroundImage: "url('/login1.jpg')",
+        boxShadow: "inset 0 0 0 2000px rgba(0, 0, 0, 0.3)",
+      }}
+    />
+  
+    {/* Main Content */}
+    <main className="relative flex-grow flex justify-start">
+      {/* Formulaire avec largeur augmentée */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10"
+        className="min-h-screen bg-white/ backdrop-blur-lg px-10 py-10 relative"
         style={{
-          backgroundImage: "url('/Register.jpg')",
-          boxShadow: "inset 0 0 0 2000px rgba(0, 0, 0, 0.3)",
+          width: '50%', // Largeur augmentée du formulaire
+          clipPath: "polygon(0% 0%, 80% 0%, 100% 100%, 0% 100%)",
+          zIndex: 20, // Assurez-vous que le formulaire est devant les éléments de texte
         }}
-      />
-      <main className="relative flex-grow flex items-center justify-center sm:justify-end py-6 px-4 sm:px-6 lg:px-20">
-        <div className="w-full max-w-md sm:w-[480px] sm:h-auto p-10 rounded-2xl bg-white/10 backdrop-blur-xl flex flex-col justify-between">
-          <div className="flex flex-col items-center space-y-6">
-            <h1 className="text-3xl font-bold text-white">Create Account</h1>
-            {error && (
-              <p className="text-red-500 text-center w-full">{error}</p>
-            )}
-            {success && (
-              <p className="text-green-500 text-center w-full">{success}</p>
-            )}
-            <form className="w-full space-y-5" onSubmit={handleSubmit}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-white text-sm font-medium mb-2">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    className="w-full p-3 rounded-lg border border-white/30 bg-white/10 backdrop-blur-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/60 transition"
-                    placeholder="Enter your full name"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-white text-sm font-medium mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    className="w-full p-3 rounded-lg border border-white/30 bg-white/10 backdrop-blur-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/60 transition"
-                    placeholder="Enter your email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-white text-sm font-medium mb-2">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    className="w-full p-3 rounded-lg border border-white/30 bg-white/10 backdrop-blur-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/60 transition"
-                    placeholder="Create a password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-white text-sm font-medium mb-2">
-                    Confirm Password
-                  </label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    className="w-full p-3 rounded-lg border border-white/30 bg-white/10 backdrop-blur-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/60 transition"
-                    placeholder="Confirm your password"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="flex items-center">
-                  <input
-                    id="terms"
-                    type="checkbox"
-                    name="termsAccepted"
-                    className="h-4 w-4 text-yellow-500 focus:ring-yellow-500"
-                    checked={formData.termsAccepted}
-                    onChange={handleChange}
-                  />
-                  <label htmlFor="terms" className="ml-2 text-sm text-white">
-                    I agree to the{" "}
-                    <a
-                      href="#"
-                      className="text-yellow-500 hover:text-yellow-400"
-                    >
-                      Terms and Conditions
-                    </a>
-                  </label>
-                </div>
-              </div>
-              <div className="relative my-4 flex items-center justify-center">
-                <div className="absolute w-full border-t border-yellow-500">
-                  {" "}
-                  <div className="relative px-4 my-2 mb-2 text-sm text-white items-center flex justify-center">
-                    Or continue with
-                  </div>
-                </div>
-              </div>
-              <GoogleAuthButton />
-              <Button className="w-full bg-transparent hover:bg-yellow-500 text-yellow-500 hover:text-white border-2 border-yellow-500 font-semibold py-3 px-6 rounded-full transition-all duration-300">
-                Create Account
-              </Button>
-              <div className="text-center mt-4">
-                <span className="text-white">Already have an account? </span>
-                <a
-                  href="/login"
-                  className="text-yellow-500 hover:text-yellow-400 font-medium"
-                >
-                  Sign in
-                </a>
-              </div>
-            </form>
+      >
+  <h1 className="text-3xl font-bold text-white mb-10 text-center mx-auto" style={{ marginLeft: '-60px' }}>
+  Create an account
+</h1>
+
+
+
+
+        {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
+        {success && <p className="text-green-500 mb-4 text-center">{success}</p>}
+  
+        {/* Formulaire */}
+        <form className="space-y-5" onSubmit={handleSubmit}>
+          {/* Full Name */}
+          <div className="flex flex-col items-start max-w-md ml-10">
+            <label className="text-white text-sm font-medium mb-1 text-left">
+              Full Name
+            </label>
+            <input
+              type="text"
+              name="fullName"
+              className="w-full p-3 rounded border border-white/30 bg-white/10 backdrop-blur-md text-white placeholder-white/60 focus:ring-2 focus:ring-white/60"
+              placeholder="Enter your full name"
+              value={formData.fullName}
+              onChange={handleChange}
+              required
+            />
           </div>
-        </div>
-      </main>
-      <Footer />
-    </div>
+  
+          {/* Email */}
+          <div className="flex flex-col items-start max-w-md ml-10">
+            <label className="text-white text-sm font-medium mb-1 text-left">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              className="w-full p-3 rounded border border-white/30 bg-white/10 backdrop-blur-md text-white placeholder-white/60 focus:ring-2 focus:ring-white/60"
+              placeholder="Enter your email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+  
+          {/* Password */}
+          <div className="flex flex-col items-start max-w-md ml-10">
+            <label className="text-white text-sm font-medium mb-1 text-left">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              className="w-full p-3 rounded border border-white/30 bg-white/10 backdrop-blur-md text-white placeholder-white/60 focus:ring-2 focus:ring-white/60"
+              placeholder="Create a password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+  
+          {/* Confirm Password */}
+          <div className="flex flex-col items-start max-w-md ml-10">
+            <label className="text-white text-sm font-medium mb-1 text-left">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              name="confirmPassword"
+              className="w-full p-3 rounded border border-white/30 bg-white/10 backdrop-blur-md text-white placeholder-white/60 focus:ring-2 focus:ring-white/60"
+              placeholder="Confirm your password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+            />
+          </div>
+  
+          {/* Checkbox Terms */}
+          <div className="flex items-center max-w-md ml-10">
+            <input
+              id="terms"
+              type="checkbox"
+              name="termsAccepted"
+              className="h-4 w-4 text-yellow-500 focus:ring-yellow-500"
+              checked={formData.termsAccepted}
+              onChange={handleChange}
+            />
+            <label htmlFor="terms" className="ml-2 text-sm text-white">
+              I agree to the{" "}
+              <a href="#" className="text-yellow-500 hover:text-yellow-400">
+                Terms and Conditions
+              </a>
+            </label>
+          </div>
+  
+          {/* Bouton légèrement décalé vers la gauche */}
+          <div className="flex justify-start ml-10">
+            <Button className="w-full max-w-md bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 rounded transition">
+              Create Account
+            </Button>
+          </div>
+  
+          {/* Lien vers connexion */}
+          <div className="flex items-start mt-4 ml-10">
+            <span className="text-white">Already have an account? </span>
+            <a href="/login" className="text-yellow-500 hover:text-yellow-400 font-medium ml-2">
+              Sign in
+            </a>
+          </div>
+        </form>
+      </div>
+    </main>
+  
+   {/* Partie avec le texte stylisé et titre */}
+   <div className="absolute inset-0 flex justify-end items-center bg-transparent z-10">
+  {/* Conteneur pour le texte avec une largeur de 50% */}
+  <div className="flex flex-col justify-center items-center text-center w-1/2 pr-30">
+    {/* Titre "The Menufy" avec un espacement large et un effet fluide */}
+    <h1 className="text-6xl font-extrabold text-white transform motion-safe:animate-slide-in-right mb-2 leading-tight" style={{ fontFamily: "'Indie Flower', cursive" }}>
+      The Menufy
+    </h1>
+
+
+    {/* Description avec marges et style moderne */}
+    <p className="text-lg text-white transform motion-safe:animate-slide-in-right" style={{ fontFamily: "'Marker Felt', cursive" }}>
+      Sign up now to explore our healthy, personalized meal kits tailored to your needs!
+    </p>
+  </div>
+</div>
+
+
+  
+    {/* Pied de page */}
+    <Footer />
+  </div>
+  
+  
   );
 }
 

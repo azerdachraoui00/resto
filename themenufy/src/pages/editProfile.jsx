@@ -1,30 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Mail, Lock, Edit3 } from "lucide-react";
-import { Link } from "react-router-dom";
-import BlurContainer from "../components/blurContainer";
+import { Edit3, Star } from "lucide-react";
 import Button from "../components/button";
 import Footer from "../components/footer";
+import Rating from 'react-rating';
 
 const EditProfile = () => {
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [userId, setUserId] = useState(null);
-  const [qrCode, setQrCode] = useState(null);
-  const [isScanning, setIsScanning] = useState(true);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // Track form submission state
-  const [isModalCompleted, setIsModalCompleted] = useState(false); // Track if the modal is completed
-
-  const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
+    rating: 0,
+    profilePic: "", 
   });
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -46,9 +38,9 @@ const EditProfile = () => {
             lastName: data.lastName || "",
             email: data.email || "",
             password: "",
+            rating: data.rating || 0,
+            profilePic: data.profilePic || "", 
           });
-          setTwoFactorEnabled(data.twoFactorEnabled);
-          setUserId(data._id);
         } else {
           setError("Failed to fetch user data.");
         }
@@ -63,40 +55,15 @@ const EditProfile = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const setup2FA = async () => {
-    const response = await fetch("http://localhost:5000/api/users/setup-2fa", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-
-    const data = await response.json();
-    if (data.qrCodeDataUrl) {
-      setQrCode(data.qrCodeDataUrl);
-      setShowModal(true);
-    }
+  const handleRatingChange = (rating) => {
+    setFormData({ ...formData, rating });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Prevent form submission if 2FA modal is still active and not completed
-    if (showModal && !isModalCompleted) {
-      setError("Please complete 2FA setup before submitting.");
-      return;
-    }
-
-    if (isSubmitting) {
-      return; // Prevent double submission
-    }
-
-    setIsSubmitting(true); // Set submitting state
-
     if (!formData.firstName || !formData.lastName || !formData.email) {
       setError("All fields are required!");
-      setIsSubmitting(false);
       return;
     }
 
@@ -112,6 +79,7 @@ const EditProfile = () => {
           lastName: formData.lastName,
           email: formData.email,
           password: formData.password || undefined,
+          rating: formData.rating,
         }),
       });
 
@@ -122,251 +90,129 @@ const EditProfile = () => {
       }
     } catch (err) {
       setError("Server error, please try again later.");
-    } finally {
-      setIsSubmitting(false); // Reset the submitting state
     }
   };
 
-  const handleDelete = async () => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete your account? This action cannot be undone."
-      )
-    ) {
-      try {
-        const response = await fetch(
-          "http://localhost:5000/api/users/profile",
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        if (response.ok) {
-          localStorage.removeItem("token");
-          navigate("/Register");
-        } else {
-          setError("Failed to delete account.");
-        }
-      } catch (err) {
-        setError("Server error, please try again later.");
-      }
-    }
-  };
-
-  const handleToggle2FA = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/api/users/toggle-2fa", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          userId: userId,
-          enabled: !twoFactorEnabled,
-        }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setTwoFactorEnabled(data.twoFactorEnabled);
-
-        if (data.twoFactorEnabled) {
-          setup2FA();
-        }
-      }
-    } catch (error) {
-      console.error("Failed to update 2FA settings", error);
-    }
-  };
-
-  const handleNext = () => {
-    setIsScanning(false);
-  };
-
-  const handleVerify = async () => {
-    if (!verificationCode) {
-      setError("Please enter the verification code.");
-      return;
-    }
-
-    try {
-      const response = await fetch("http://localhost:5000/api/users/verify-2fa", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ verificationCode }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setIsModalCompleted(true); // Mark 2FA modal as completed
-        setShowModal(false);
-        setTwoFactorEnabled(true);
-      } else {
-        setError("Verification failed. Please try again.");
-      }
-    } catch (err) {
-      setError("Verification failed. Please try again.");
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, profilePic: reader.result });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10"
-        style={{
-          backgroundImage: "url('/Profile.jpg')",
-          boxShadow: "inset 0 0 0 2000px rgba(0, 0, 0, 0.3)",
-        }}
-      />
-
-      <main className="flex-grow flex items-center justify-center py-12 px-6">
-        <BlurContainer className="fixed inset-x-auto items-center justify-center p-8 rounded-2xl bg-white/10 backdrop-blur-xl text-white">
-          <h1 className="text-3xl font-bold text-center mb-6">Edit Profile</h1>
-          {error && <p className="text-red-500 text-center">{error}</p>}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3 bg-white/10 p-4 rounded-lg">
-                <User className="text-yellow-500" size={20} />
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  className="bg-transparent text-white focus:outline-none w-full"
-                  placeholder="First Name"
-                  required
-                />
+    <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: "url('/bg.jpg')" }}>
+      <main className="flex items-center justify-center min-h-screen py-12 px-6">
+        <div className="max-w-5xl w-full bg-white/40 backdrop-blur-sm p-8 rounded-2xl shadow-sm">
+          <div className="flex flex-wrap items-center justify-between">
+            {/* Image Section */}
+            <div className="w-1/3 mb-6 text-center relative">
+              <div className="text-xl font-semibold text-black mb-4">
+                {formData.firstName} {formData.lastName}
               </div>
 
-              <div className="flex items-center space-x-3 bg-white/10 p-4 rounded-lg">
-                <User className="text-yellow-500" size={20} />
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  className="bg-transparent text-white focus:outline-none w-full"
-                  placeholder="Last Name"
-                  required
+              <div className="relative w-40 h-40 rounded-full overflow-hidden border-4 border-yellow-500 mx-auto mb-4">
+                {/* Display profile image or default placeholder */}
+                <img
+                  src={formData.profilePic || "/default-profile.jpg"} // Use a default image if no profile image is found
+                  alt="Profile"
+                  className="w-full h-full object-cover"
                 />
-              </div>
-
-              <div className="flex items-center space-x-3 bg-white/10 p-4 rounded-lg">
-                <Mail className="text-yellow-500" size={20} />
+                {/* Edit icon on top of the profile picture */}
+                <label htmlFor="fileInput" className="absolute bottom-0 right-0 bg-yellow-500 p-2 rounded-full cursor-pointer z-10">
+                  <Edit3 className="text-white" size={20} />
+                </label>
                 <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="bg-transparent text-white focus:outline-none w-full"
-                  placeholder="Email"
-                  required
+                  type="file"
+                  id="fileInput"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
                 />
-              </div>
-
-              <div className="flex items-center space-x-3 bg-white/10 p-4 rounded-lg">
-                <Lock className="text-yellow-500" size={20} />
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="bg-transparent text-white focus:outline-none w-full"
-                  placeholder="New Password (optional)"
-                />
-              </div>
-
-              <div className="mt-4 flex items-center space-x-4">
-                <label className="text-white">Enable Two-Factor Authentication</label>
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    checked={twoFactorEnabled}
-                    onChange={handleToggle2FA}
-                    className="opacity-0 absolute w-0 h-0"
-                  />
-                  <div
-                    className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer ${
-                      twoFactorEnabled ? "bg-green-500" : "bg-gray-300"
-                    }`}
-                    onClick={handleToggle2FA}
-                  >
-                    <div
-                      className={`w-6 h-6 bg-white rounded-full transition-all ${
-                        twoFactorEnabled ? "translate-x-6" : "translate-x-0"
-                      }`}
-                    />
-                  </div>
-                </div>
               </div>
             </div>
 
-            {showModal && (
-              <BlurContainer className="fixed inset-y-0 flex items-center justify-center w-[315px] rounded-2xl bg-black/70 backdrop-blur-xl text-white">
-                <div className=" p-8 rounded-xl shadow-lg">
-                  <h2 className="text-2xl mb-4">
-                    {isScanning ? "Scan the QR Code" : "Enter the Verification Code"}
-                  </h2>
-                  {isScanning ? (
-                    <div className="text-center">
-                      <img
-                        src={qrCode}
-                        alt="QR Code"
-                        className="w-48 h-48 mx-auto mb-4"
-                      />
-                      <button
-                        onClick={handleNext}
-                        className="w-full bg-yellow-500 text-white font-semibold py-3 px-6 rounded-full"
-                      >
-                        Next
-                      </button>
-                    </div>
-                  ) : (
-                    <div>
-                      <input
-                        type="text"
-                        value={verificationCode}
-                        onChange={(e) => setVerificationCode(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg"
-                        placeholder="Enter the verification code"
-                      />
-                      <button
-                        onClick={handleVerify}
-                        className="mt-4 w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-full"
-                      >
-                        Verify
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </BlurContainer>
-            )}
+            {/* Form Section */}
+            <div className="w-2/3 pl-8">
+              <h1 className="text-3xl font-bold text-black mb-4">Edit Profile</h1>
+              {error && <p className="text-red-500">{error}</p>}
 
-            <Button
-              type="submit"
-              className="w-full bg-transparent hover:bg-yellow-500 text-yellow-500 hover:text-white border-2 border-yellow-500 font-semibold py-3 px-6 rounded-full transition-all duration-300"
-              disabled={isSubmitting || showModal || !isModalCompleted} // Disable until modal is completed
-            >
-              Save Changes
-            </Button>
-            <Button
-              onClick={handleDelete}
-              type="button"
-              className="w-full bg-transparent hover:bg-red-500 text-red-500 hover:text-white border-2 border-red-500 font-semibold py-3 px-6 rounded-full transition-all duration-300"
-            >
-              Delete Account
-            </Button>
-          </form>
-        </BlurContainer>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="flex flex-col mb-4">
+                  <label htmlFor="firstName" className="text-black">First Name</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    className="mt-2 p-3 rounded-lg bg-gray-200 text-black"
+                    placeholder="First Name"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col mb-4">
+                  <label htmlFor="lastName" className="text-black">Last Name</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    className="mt-2 p-3 rounded-lg bg-gray-200 text-black"
+                    placeholder="Last Name"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col mb-4">
+                  <label htmlFor="email" className="text-black">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="mt-2 p-3 rounded-lg bg-gray-200 text-black"
+                    placeholder="Email"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col mb-4">
+                  <label htmlFor="password" className="text-black">Password</label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="mt-2 p-3 rounded-lg bg-gray-200 text-black"
+                    placeholder="New Password (optional)"
+                  />
+                </div>
+
+                <div className="flex items-center mb-4">
+                  <Star className="text-yellow-500" size={20} />
+                  <Rating
+                    emptySymbol="fa fa-star-o fa-2x"
+                    fullSymbol="fa fa-star fa-2x"
+                    initialRating={formData.rating}
+                    onChange={handleRatingChange}
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-yellow-500 text-white font-semibold py-3 px-6 rounded-full transition-all duration-300"
+                >
+                  Save Changes
+                </Button>
+              </form>
+            </div>
+          </div>
+        </div>
       </main>
       <Footer />
     </div>

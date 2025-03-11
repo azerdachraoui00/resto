@@ -18,14 +18,16 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ["superadmin", "admin", "user"],
     default: "user",
-  }, // Default role is "user"
+  }, 
 
+  profilePic: { type: String },
   // 🔹 Password Reset Fields
   resetToken: { type: String },
   resetTokenExpiry: { type: Date },
+
   // 🔹 2FA Fields
-  twoFactorEnabled: { type: Boolean, default: false }, // 🔹 2FA toggle
-  twoFactorSecret: String, // 🔹 Secret for Google Authenticator (optional)
+  twoFactorEnabled: { type: Boolean, default: false },
+  twoFactorSecret: String,
 });
 
 // 🔹 Hash password before saving

@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaGoogle, FaFacebook } from "react-icons/fa"; // Import icons
 import Button from "../components/button";
 import Footer from "../components/footer";
 import GoogleAuthButton from "../components/GoogleAuthButton";
-
+import FacebookAuthButton from "../components/FacebookAuthButton";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -56,26 +57,33 @@ function Login() {
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10"
         style={{
-          backgroundImage: "url('/login.jpg')",
+          backgroundImage: "url('/login1.jpg')",
           boxShadow: "inset 0 0 0 2000px rgba(0, 0, 0, 0.3)",
         }}
       />
 
       {/* Main Content */}
-      <main className="relative flex-grow flex items-center justify-center sm:justify-start py-6 px-4 sm:px-6 lg:px-20">
-      <div className="w-full max-w-md sm:w-[480px] sm:h-[600px] p-10 rounded-2xl bg-white/10 backdrop-blur-xl mr-0 sm:mr-10 flex flex-col justify-between">
+      <main className="relative flex-grow flex items-center justify-center py-6 px-4 sm:px-6 lg:px-20">
+      <div className="w-full max-w-md sm:w-[480px] sm:h-[600px] p-10 rounded-2xl bg-white/10 backdrop-blur-lg mr-0 sm:mr-10 flex flex-col justify-between">
           <div className="flex flex-col items-center space-y-6">
-            <h1 className="text-3xl font-bold text-white pt-4">Sign in</h1>
+           
+          {/* Title */}
+{/* Title */}
+<h1 className="text-3xl font-bold text-white pt-4 mb-8">Sign In</h1>
+
+{/* Petit titre explicatif */}
+
+
 
             {/* Display Error Message */}
             {error && <p className="text-red-500 text-center w-full">{error}</p>}
 
             {/* Login Form */}
             <form className="w-full max-w-sm space-y-6" onSubmit={handleSubmit}>
-              <div className="space-y-6">
+              <div className="space-y-5">
                 {/* Email Input */}
                 <div>
-                  <label className="block text-white text-sm font-medium mb-3">
+                  <label className="block text-white text-sm font-medium mb-4">
                     Email
                   </label>
                   <input
@@ -90,7 +98,7 @@ function Login() {
 
                 {/* Password Input */}
                 <div>
-                  <label className="block text-white text-sm font-medium mb-3">
+                  <label className="block text-white text-sm font-medium mb-4">
                     Password
                   </label>
                   <input
@@ -140,29 +148,33 @@ function Login() {
                 </div>
               </div>
 
-              <div className="relative my-4 flex items-center justify-center">
-                <div className="absolute w-full border-t border-yellow-500">
-                  <div className="relative px-4 my-2 mb-2 text-sm text-white flex justify-center">
-                    Or continue with
-                  </div>
-                </div>
-              </div>
+             
 
-              <GoogleAuthButton />
 
               {/* Submit Button */}
               <Button
-                className="w-full bg-transparent hover:bg-yellow-500 text-yellow-500 hover:text-white border-2 border-yellow-500 font-semibold py-3 px-6 rounded-full transition-all duration-300 mt-6"
+                className="w-full bg-transparent hover:bg-yellow-500 text-yellow-500 hover:text-white border-2 border-yellow-500 font-semibold py-3 px-6 rounded-full transition-all duration-300 mt-3"
                 type="submit"
               >
                 Sign in
               </Button>
             </form>
+            {/* Phrase "Or sign up using" */}
+<div className="text-center text-white mt-0 font-normal">
+  Or sign up using
+  <div className="flex justify-center -mx-0">
+  <GoogleAuthButton className="w-12 h-12 p-2 bg-white rounded-full shadow-lg mx-1" />
+  <FacebookAuthButton className="w-12 h-12 p-2 bg-white rounded-full shadow-lg mx-1" />
+</div>
+
+</div>
+{/* Boutons Google et Facebook */}
+
           </div>
 
           {/* Sign up link */}
-          <div className="text-center mt-4">
-            <span className="text-white">Don't have an account? </span>
+          <div className="text-center mt-0">
+            <span className="text-white">Don't have an account ? </span>
             <a
               href="/register"
               className="text-yellow-500 hover:text-yellow-400 font-medium"

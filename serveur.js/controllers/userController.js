@@ -87,17 +87,35 @@ exports.getProfile = async (req, res) => {
 // Update User (Protected)
 exports.updateUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(req.user.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    const { profilePic } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
 
+    // Vérification si une image est envoyée
+    if (profilePic) {
+      // Vérifier si c'est bien du Base64
+      if (!/^data:image\/(jpeg|png|webp);base64,/.test(profilePic)) {
+        return res.status(400).json({ message: "Format d'image non valide !" });
+      }
+
+      // Limiter la taille du fichier (ex: max 500 KB)
+      const base64Data = profilePic.split(",")[1]; // Enlever le préfixe `data:image/...`
+      const buffer = Buffer.from(base64Data, "base64");
+
+      if (buffer.length > 500 * 1024) {
+        return res.status(400).json({ message: "L'image est trop grande (max 500KB) !" });
+      }
+
+      user.profilePic = profilePic; // Stockage en base de données
+    }
+
+    await user.save();
     res.status(200).json(user);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
+
 
 // Delete User (Protected)
 exports.deleteUser = async (req, res) => {

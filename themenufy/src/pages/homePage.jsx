@@ -23,16 +23,19 @@ const HomePage = () => {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen flex flex-col">
+      {/* Arrière-plan */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat min-h-screen"
         style={{
           backgroundImage: "url('/bg.jpg')",
           boxShadow: "inset 0 0 0 2000px rgba(0, 0, 0, 0.3)",
         }}
       />
-      <div className="relative min-h-screen flex flex-col items-center justify-center py-10 px-4 sm:px-6 lg:px-16">
-        <div className="w-full max-w-7xl pt-8">
+      
+      {/* Contenu principal */}
+      <div className="relative flex-grow flex flex-col items-center justify-center py-10 px-4 sm:px-6 lg:px-16">
+        <div className="w-full max-w-7xl pt-15">
           <BlurContainer
             blur="xl"
             opacity={50}
@@ -99,7 +102,8 @@ const HomePage = () => {
           </BlurContainer>
         </div>
       </div>
-    </div>
+
+      </div>
   );
 };
 
