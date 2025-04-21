@@ -13,6 +13,7 @@ function Login() {
   const [error, setError] = useState(""); 
   const navigate = useNavigate(); 
 
+
   // Handle login
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,6 +31,7 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
+        
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.user.role);
 

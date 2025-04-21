@@ -2,7 +2,9 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema({
-  firstName: { type: String, required: true, trim: true },
+  firstName: { type: String,
+     required: true, 
+     trim: true },
   lastName: { type: String, required: true, trim: true },
   email: {
     type: String,
@@ -16,11 +18,17 @@ const userSchema = new mongoose.Schema({
   googleId: { type: String, unique: true, sparse: true },
   role: {
     type: String,
-    enum: ["superadmin", "admin", "user"],
+    enum: ["superadmin",
+       "admin",
+        "user"],
     default: "user",
   }, 
 
-  profilePic: { type: String },
+  profilePic: { type: String , 
+
+      default: 'default.jpg'
+   },
+   
   // 🔹 Password Reset Fields
   resetToken: { type: String },
   resetTokenExpiry: { type: Date },

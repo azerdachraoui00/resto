@@ -16,6 +16,7 @@ import VerifyCode from "./pages/VerifyCode";
 import Test from "./pages/test";
 import ContactPage from "./pages/ContactPage";
 import ServicesPage from "./pages/ServicesPage";
+import ReviewsPage from "./pages/ReviewsPage";
 const App = () => {
   const location = useLocation(); // Get the current route
 
@@ -41,6 +42,7 @@ const App = () => {
           <Route path="/test" element={<Test />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/services" element={<ServicesPage />} />
+          <Route path="/reviews" element={<ReviewsPage />} />
 
           <Route
             path="/admin"

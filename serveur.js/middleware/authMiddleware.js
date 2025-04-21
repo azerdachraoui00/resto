@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 
 exports.protect = (req, res, next) => {
-  const token = req.header("Authorization")?.split(" ")[1]; // Get token from header
+  console.log(req.header("Authorization"))
+  const token = req.header("Authorization")?.split(" ")[1]; 
   if (!token)
     return res
       .status(401)
@@ -10,10 +11,10 @@ exports.protect = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
-    console.log("Decoded User:", req.user);  // Debugging line
+    console.log("Decoded User:", req.user); 
     next();
   } catch (error) {
-    console.error("Token Error:", error);  // Log the error for more details
+    console.error("Token Error:", error); 
     res.status(401).json({ message: "Invalid Token" });
   }
 };
@@ -26,3 +27,4 @@ exports.verifyRole = (roles) => {
     next();
   };
 };
+
