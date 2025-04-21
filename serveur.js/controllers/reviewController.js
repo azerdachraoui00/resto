@@ -49,13 +49,11 @@ const review = {
  ,   
       createReview :  async (req, res) => {
         try {
-          console.log("back  ready")
             upload.single("file")(req, res, async function (err) {
                 if (err) {
                   return res.status(400).json({ error: "File upload failed" });
                 }
         const { description, rating } = req.body;
-        console.log(req.body)
           const newReview = new Review({
             user : req.user.id , 
             description,
@@ -73,11 +71,10 @@ const review = {
 
 
       addComment : async (req, res) => {
+
         const { text } = req.body;
-      console.log(text)
         try {
           const review = await Review.findById(req.params.id);
-      console.log(review)
           const newComment = {
             user: req.user.id,
             text
@@ -92,31 +89,9 @@ const review = {
         }
       },
 
-      addReply  :  async (req, res) => {
-        const { text } = req.body;
-      
-        try {
-          const review = await Review.findById(req.params.id);
-          const comment = review.comments.find(
-            comment => comment.id === req.params.commentId
-          );
-      
-          const newReply = {
-            user: req.user.id,
-            text
-          };
-      
-          comment.replies.unshift(newReply);
-          await review.save();
-          res.json(comment.replies);
-        } catch (err) {
-          console.error(err.message);
-          res.status(500).send('Server error');
-        }
-      }    , 
+
       likeReview  :  async (req, res) => {
         try {
-          console.log(req.params.id)
           const review = await Review.findById(req.params.id);
                 if (review.likes.some(like => like.toString() === req.user.id)) {
             review.likes = review.likes.filter(like => like.toString() !== req.user.id);
@@ -128,6 +103,51 @@ const review = {
         } catch (err) {
           console.error(err.message);
           res.status(500).send('Server error');
+        }
+      } , 
+
+      addReply : async (req, res) => {
+        try {
+          const { text } = req.body;
+          const { id, commentId } = req.params;
+
+           console.log(req.body)
+      
+          if (!text || text.trim().length === 0) {
+            return res.status(400).json({ msg: 'Le texte de la réponse est requis' });
+          }
+                const review = await Review.findById(id);
+          if (!review) {
+            return res.status(404).json({ msg: 'Review non trouvée' });
+          }
+                const comment = review.comments.find(c => c._id.toString() === commentId);
+          if (!comment) {
+            return res.status(404).json({ msg: 'Commentaire non trouvé' });
+          }
+                const newReply = {
+            user: req.user.id,
+            text: text.trim()
+          };
+      
+          comment.replies.unshift(newReply);
+      
+          await review.save();
+      
+          await Review.populate(review, {
+            path: 'comments.replies.user',
+            select: 'firstName lastName profilePic'
+          });
+      
+          const updatedComment = review.comments.find(c => c._id.toString() === commentId);
+          res.json(updatedComment.replies);
+      
+        } catch (err) {
+          console.error(err.message);
+                    if (err.kind === 'ObjectId') {
+            return res.status(400).json({ msg: 'ID non valide' });
+          }
+      
+          res.status(500).send('Erreur serveur');
         }
       }
 } 

@@ -1,34 +1,54 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaStar, FaRegStar, FaHeart, FaRegHeart, FaComment, FaReply, FaTimes } from "react-icons/fa";
 import BlurContainer from "../components/blurContainer";
 import Button from "../components/button";
 import toast, { Toaster } from 'react-hot-toast';
-import { useEffect } from "react";
 import axios from 'axios';
 
-
-
-
-
 const ReviewsPage = () => {
-  const [reviews, setReviews] = useState([]);
-
-  const [newComments, setNewComments] = useState({});
+  const [allreviews, setAllReviews] = useState([]);
   const [activeModal, setActiveModal] = useState({
     type: null, 
     reviewId: null,
     comment: null
   });
+  const [file, setFile] = useState();
+  const [description, setDescription] = useState();
+  const [rating, setRating] = useState(0);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [commentText, setCommentText] = useState("");
 
-  const handleLike = (id) => {
-    setReviews(
-      reviews.map((r) =>
-        r.id === id
-          ? { ...r, likes: r.liked ? r.likes - 1 : r.likes + 1, liked: !r.liked }
-          : r
-      )
-    );
+  const accessToken = localStorage.getItem('token');
+  const config = {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`, 
+    }
   };
+
+
+  const getAllReviews = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/review/getreviews", config);
+      setAllReviews(response.data);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      toast.error("Erreur lors du chargement des avis");
+    }
+  };
+
+  const getCurrentUser = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/review/me", config);
+      setCurrentUser(response.data);
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+    }
+  };
+
+  useEffect(() => {
+    getAllReviews();
+    getCurrentUser();
+  }, []);
 
   const openCommentsModal = (reviewId) => {
     setActiveModal({
@@ -54,172 +74,97 @@ const ReviewsPage = () => {
     });
   };
 
-  const handleComment = (reviewId) => {
-    const commentText = newComments[reviewId]?.trim();
-    if (!commentText) return;
-
-    const newComment = { 
-      id: Date.now(), 
-      user: "Vous", 
-      avatar: "https://i.pravatar.cc/150?img=5",
-      text: commentText, 
-      replies: [] 
-    };
-    
-    setReviews(
-      reviews.map((r) =>
-        r.id === reviewId ? { ...r, comments: [...r.comments, newComment] } : r
-      )
-    );
-    setNewComments({ ...newComments, [reviewId]: "" });
-  };
-
-  const handleReply = (replyText) => {
-    if (!replyText.trim()) return;
-
-    const newReply = { 
-      id: Date.now(), 
-      user: "Vous", 
-      avatar: "https://i.pravatar.cc/150?img=5",
-      text: replyText 
-    };
-
-    setReviews(
-      reviews.map(review => {
-        if (review.id === activeModal.reviewId) {
-          return {
-            ...review,
-            comments: review.comments.map(comment => {
-              if (comment.id === activeModal.comment.id) {
-                return {
-                  ...comment,
-                  replies: [...comment.replies, newReply]
-                };
-              }
-              return comment;
-            })
-          };
-        }
-        return review;
-      })
-    );
-    
-    closeModal();
-  };
-
-
-
-  const getCurrentReview = () => {
-    return reviews.find(r => r.id === activeModal.reviewId);
-  };
-
-  const [file , setfile] = useState()
-  const [description , setdescription] = useState()
-  const [rating , setrating] = useState(0)
-  const accessToken = localStorage.getItem('token');
-  const config = {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`, 
+  const likeReview = async (reviewId) => {
+    try {
+      await axios.put(`http://localhost:5000/api/review/like/${reviewId}`, {}, config);
+      getAllReviews();
+    } catch (error) {
+      console.error("Error liking review:", error);
+      toast.error("Erreur lors du like");
     }
   };
-  const upload = async () => {
+
+  const addComment = async (reviewId) => {
+    if (!commentText.trim()) return;
+    
     try {
-      const formadata = new FormData()
-      console.log(description)
-      console.log(rating)
-  
-      if (!rating  || rating.length === 0) {
-        console.log("t3ada")
-        toast.error(
-          <b>
-            verifier  rating 
-          </b>)
-          return; 
+      await axios.post(`http://localhost:5000/api/review/comment/${reviewId}`, {
+        text: commentText
+      }, config);
+      
+      setCommentText("");
+      getAllReviews(); 
+      
+      if (activeModal.type === 'comments') {
+        closeModal();
       }
-      else  {
-        formadata.append("rating", rating);
-      }
-      if (!description   ||  description.length === 0) {
-        toast.error("Vérifier la longueur de la description");
-          return; 
-      }
-      else  {
-        formadata.append("description", description);
-      }
-      if(file) {
-          formadata.append("file", file);
-         }
-         else {
-          toast.error(
-            <b>
-              file  Invalide
-            </b>)
-            return ; 
-        }
-         await axios.post("http://localhost:5000/api/review/createdrec",formadata , config
-      ).then((response) => {
-        console.log("responsable",response.data)
-        toast.success(
-          <b>
-            créer un Reviews avec succès
-          </b>
-        );
-      });
-  
     } catch (error) {
-      console.log(error)
-      }
+      console.error("Error adding comment:", error);
+      toast.error("Erreur lors de l'ajout du commentaire");
+    }
   };
 
+  const addReply = async (replyText) => {
+    if (!replyText.trim()) return;
 
-
-const [allreviews , setreviews] = useState([]) ; 
-  const getAllreviews = async () => {
     try {
-      if (!accessToken) {
-        console.log("Access token is missing.");
+      await axios.post(
+        `http://localhost:5000/api/review/comment/${activeModal.reviewId}/reply/${activeModal.comment._id}`,
+        { text: replyText },
+        config
+      );
+      
+      closeModal();
+      getAllReviews(); 
+    } catch (error) {
+      console.error("Error adding reply:", error);
+      toast.error("Erreur lors de l'ajout de la réponse");
+    }
+  };
+
+  const uploadReview = async () => {
+    try {
+      const formData = new FormData();
+      
+      if (!rating || rating === 0) {
+        toast.error("Veuillez donner une note");
         return;
       }
-      await axios.get("http://localhost:5000/api/review/getreviews", config).then((response) => {
-        console.log(response?.data)
-        setreviews(response?.data);
-      });
+      formData.append("rating", rating);
+
+      if (!description || description.trim().length === 0) {
+        toast.error("Veuillez écrire une description");
+        return;
+      }
+      formData.append("description", description);
+
+      if (!file) {
+        toast.error("Veuillez sélectionner une image");
+        return;
+      }
+      formData.append("file", file);
+
+      await axios.post("http://localhost:5000/api/review/createdrec", formData, config);
+      
+      toast.success("Avis créé avec succès");
+      setDescription("");
+      setRating(0);
+      setFile(null);
+      getAllReviews(); 
     } catch (error) {
-    
-        console.log(error)
-      }}
-
-const [currentUser , setCurrentUser] = useState()
-      const getCurrentUser = async () => {
-        const response = await axios.get("http://localhost:5000/api/review/me", config);
-        setCurrentUser(response.data)
-      };
-
-
-  const likeReview = async (id) => {
-    const response = await axios.put(`http://localhost:5000/api/review/like/${id}`, {}, config);
-    console.log(response.data)
+      console.error("Error creating review:", error);
+      toast.error("Erreur lors de la création de l'avis");
+    }
+  };
+  const getCurrentReview = () => {
+    return allreviews.find(r => r._id === activeModal.reviewId);
   };
 
-  const [text , setcommentData] = useState()
-  const addComment = async (reviewId) => {
-    console.log(text)
-    const response = await axios.post(`http://localhost:5000/api/review/comment/${reviewId}`, text, config);
-    console.log(response.data)
-  };
-
-  useEffect(() => {
-    getAllreviews();
-    getCurrentUser()
-  } , []);
   return (
-    
-    <div
-      className="relative min-h-screen flex flex-col items-center py-10 px-4 sm:px-6 lg:px-16 bg-cover bg-center"
-      style={{ backgroundImage: "url('/bg.jpg')" }}
-    >
-                <Toaster position="top-right" />
-
+    <div className="relative min-h-screen flex flex-col items-center py-10 px-4 sm:px-6 lg:px-16 bg-cover bg-center"
+      style={{ backgroundImage: "url('/bg.jpg')" }}>
+      
+      <Toaster position="top-right" />
       <div className="absolute inset-0 bg-black bg-opacity-50"></div>
 
       <div className="relative z-10 w-full max-w-4xl text-center">
@@ -227,97 +172,83 @@ const [currentUser , setCurrentUser] = useState()
           Avis des Clients
         </h1>
 
-        {/* Formulaire d'ajout d'avis */}
-        <BlurContainer className="w-full p-6 rounded-2xl bg-black bg-opacity-60 mb-8">
-          <h2 className="text-white text-xl mb-4">Ajoutez votre avis</h2>
-          <textarea
-            className="w-full p-2 rounded-md mb-2 bg-gray-800 text-white"
-            placeholder="Décrivez votre expérience..."
-            onChange={(e) =>
-            {
-              console.log(e.target.value)
-              setdescription(e.target.value)
-            }
-            }
-          />
-          <input
-            type="file"
-            accept="image/*"
-            className="mb-2 text-white"
-            onChange={(e) =>{
-              setfile(e.target.files[0])
-              console.log(e.target.files[0])
-            }
-              
-            }
-          />
-          <div className="flex space-x-1 mb-4 justify-center">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                onClick={() => 
-                {
-                  setrating(star)
-                  console.log(star
-                  )
-                
-                }
+        {currentUser && (
+          <BlurContainer className="w-full p-6 rounded-2xl bg-black bg-opacity-60 mb-8">
+            <h2 className="text-white text-xl mb-4">Ajoutez votre avis</h2>
+            <textarea
+              className="w-full p-2 rounded-md mb-2 bg-gray-800 text-white"
+              placeholder="Décrivez votre expérience..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            <input
+              type="file"
+              accept="image/*"
+              className="mb-2 text-white"
+              onChange={(e) => setFile(e.target.files[0])}
+            />
+            <div className="flex space-x-1 mb-4 justify-center">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setRating(star)}
+                  className="text-2xl"
+                >
+                  {star <= rating ? (
+                    <FaStar className="text-yellow-500" />
+                  ) : (
+                    <FaRegStar className="text-gray-400" />
+                  )}
+                </button>
+              ))}
+            </div>
+            <Button
+              onClick={uploadReview}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-full transition"
+            >
+              Publier
+            </Button>
+          </BlurContainer>
+        )}
 
-                }
-                className="text-2xl"
-              >
-                {star <= rating ? (
-                  <FaStar className="text-yellow-500" />
-                ) : (
-                  <FaRegStar className="text-gray-400" />
-                )}
-              </button>
-            ))}
-          </div>
-          <Button
-            onClick={upload}
-            className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-full transition"
-          >
-            Publier
-          </Button>
-        </BlurContainer>
-
+        {/* Liste des avis */}
         <div className="w-full space-y-6">
           {allreviews.map((review) => (
-            <BlurContainer
-              key={review.id}
-              className="p-6 rounded-xl bg-black bg-opacity-70"
-            >
+            <BlurContainer key={review._id} className="p-6 rounded-xl bg-black bg-opacity-70">
+              {/* En-tête de la review */}
               <div className="flex items-start mb-4">
                 <img 
-                   src={`http://localhost:5000/reviews/${review.user.profilePic}`}
+                  src={`http://localhost:5000/reviews/${review.user.profilePic}`}
                   alt={review.user.firstName} 
                   className="w-12 h-12 rounded-full mr-3"
                 />
                 <div className="text-left">
-                  <div className="text-white font-semibold">{review.user.firstName}</div>
+                  <div className="text-white font-semibold">{review.user.firstName} {review.user.lastName}</div>
                   <div className="flex items-center mb-1">
                     {[...Array(review.rating)].map((_, i) => (
                       <FaStar key={i} className="text-yellow-500 text-sm" />
                     ))}
                   </div>
-                  <div className="text-white">
-                  {review.createdAt}
-
+                  <div className="text-white text-sm">
+                    {new Date(review.createdAt).toLocaleDateString()}
                   </div>
                 </div>
               </div>
               
+              {/* Contenu de la review */}
               <p className="text-white mb-4 text-left">{review.description}</p>
               
+              {/* Image de la review */}
               {review.image && (
                 <img
-                src={`http://localhost:5000/reviews/${review.image}`}
-                alt="Review"
+                  src={`http://localhost:5000/reviews/${review.image}`}
+                  alt="Review"
                   className="rounded-lg w-full mb-4 max-h-80 object-cover"
                 />
               )}
               
+              {/* Actions (like, comment) */}
               <div className="flex items-center space-x-6 text-white mb-4 border-t border-gray-700 pt-3">
                 <button 
                   onClick={() => likeReview(review._id)}
@@ -339,41 +270,27 @@ const [currentUser , setCurrentUser] = useState()
                 </button>
               </div>
 
-              {/* Comment input (only shows 1 comment preview) */}
+              {/* Aperçu du premier commentaire */}
               {review.comments.length > 0 && (
                 <div className="text-left text-white mb-4">
                   <div className="bg-gray-800 bg-opacity-60 p-3 rounded-md">
                     <div className="flex items-start mb-1">
                       <img 
-                        src={review.comments[0].avatar} 
-                        alt={review.comments[0].user} 
+                        src={`http://localhost:5000/reviews/${review.comments[0].user.profilePic}`}
+                        alt={review.comments[0].user.firstName} 
                         className="w-8 h-8 rounded-full mr-2"
                       />
                       <div>
-                        <div className="font-semibold text-sm">{review.comments[0].user}</div>
+                        <div className="font-semibold text-sm">
+                          {review.comments[0].user.firstName} {review.comments[0].user.lastName}
+                        </div>
                         <p className="text-sm">{review.comments[0].text}</p>
                       </div>
                     </div>
-                    {review.comments[0].replies.length > 0 && (
-                      <div className="ml-10 mt-2">
-                        <div className="bg-gray-700 bg-opacity-60 p-2 rounded-md">
-                          <div className="flex items-start">
-                            <img 
-                              src={review.comments[0].replies[0].avatar} 
-                              alt={review.comments[0].replies[0].user} 
-                              className="w-6 h-6 rounded-full mr-2"
-                            />
-                            <div>
-                              <div className="font-semibold text-xs">{review.comments[0].replies[0].user}</div>
-                              <p className="text-xs">{review.comments[0].replies[0].text}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    
                     {review.comments.length > 1 && (
                       <button 
-                        onClick={() => openCommentsModal(review.id)}
+                        onClick={() => openCommentsModal(review._id)}
                         className="text-xs text-blue-400 hover:text-blue-300 mt-2"
                       >
                         Voir les {review.comments.length - 1} commentaires supplémentaires
@@ -383,37 +300,34 @@ const [currentUser , setCurrentUser] = useState()
                 </div>
               )}
 
-              {/* Comment input */}
-              <div className="flex items-center gap-2">
-                <img 
-                   src={`http://localhost:5000/reviews/${currentUser.profilePic}`}
-                   alt="Vous" 
-                  className="w-8 h-8 rounded-full"
-                />
-                <input
-                  type="text"
-                  placeholder="Ajouter un commentaire..."
-                  onChange={(e) =>
-                  {
-                    setcommentData(e.target.value)
-                    console.log(e.target.value)
-                  }}
-                  className="flex-1 px-3 py-2 rounded-full bg-gray-700 text-white text-sm"
-                  onKeyPress={(e) => e.key === 'Enter' && handleComment(review.id)}
-                />
-                <Button
-                  onClick={() => addComment(review._id)}
-                  className="text-sm bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full transition"
-                >
-                  Envoyer
-                </Button>
-              </div>
+              {currentUser && (
+                <div className="flex items-center gap-2">
+                  <img 
+                    src={`http://localhost:5000/reviews/${currentUser.profilePic}`}
+                    alt="Vous" 
+                    className="w-8 h-8 rounded-full"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Ajouter un commentaire..."
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    className="flex-1 px-3 py-2 rounded-full bg-gray-700 text-white text-sm"
+                    onKeyPress={(e) => e.key === 'Enter' && addComment(review._id)}
+                  />
+                  <Button
+                    onClick={() => addComment(review._id)}
+                    className="text-sm bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full transition"
+                  >
+                    Envoyer
+                  </Button>
+                </div>
+              )}
             </BlurContainer>
           ))}
         </div>
       </div>
 
-      {/* Comments Modal */}
       {activeModal.type === 'comments' && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
           <BlurContainer className="w-full max-w-2xl p-6 rounded-xl bg-black bg-opacity-80 max-h-[90vh] overflow-y-auto">
@@ -428,16 +342,18 @@ const [currentUser , setCurrentUser] = useState()
             </div>
             
             <div className="space-y-4">
-              {getCurrentReview()?.comments.map(comment => (
-                <div key={comment.id} className="bg-gray-800 p-4 rounded-md">
+              {getCurrentReview()?.comments.map((comment) => (
+                <div key={comment._id} className="bg-gray-800 p-4 rounded-md">
                   <div className="flex items-start">
                     <img 
-                      src={comment.avatar} 
-                      alt={comment.user} 
+                      src={`http://localhost:5000/reviews/${comment.user.profilePic}`}
+                      alt={comment.user.firstName} 
                       className="w-10 h-10 rounded-full mr-3"
                     />
                     <div className="flex-1">
-                      <div className="font-semibold text-white">{comment.user}</div>
+                      <div className="font-semibold text-white">
+                        {comment.user.firstName} {comment.user.lastName}
+                      </div>
                       <p className="text-white text-sm mt-1">{comment.text}</p>
                       
                       <button 
@@ -449,16 +365,18 @@ const [currentUser , setCurrentUser] = useState()
                       
                       {comment.replies.length > 0 && (
                         <div className="ml-6 mt-3 space-y-3">
-                          {comment.replies.map(reply => (
-                            <div key={reply.id} className="bg-gray-700 p-3 rounded-md">
+                          {comment.replies.map((reply) => (
+                            <div key={reply._id} className="bg-gray-700 p-3 rounded-md">
                               <div className="flex items-start">
                                 <img 
-                                  src={reply.avatar} 
-                                  alt={reply.user} 
+                                  src={`http://localhost:5000/reviews/${reply.user.profilePic}`}
+                                  alt={reply.user.firstName} 
                                   className="w-8 h-8 rounded-full mr-2"
                                 />
                                 <div>
-                                  <div className="font-semibold text-sm text-white">{reply.user}</div>
+                                  <div className="font-semibold text-sm text-white">
+                                    {reply.user.firstName} {reply.user.lastName}
+                                  </div>
                                   <p className="text-sm text-white mt-1">{reply.text}</p>
                                 </div>
                               </div>
@@ -472,45 +390,33 @@ const [currentUser , setCurrentUser] = useState()
               ))}
             </div>
             
-            <div className="flex items-center gap-2 mt-6 sticky bottom-0 bg-black bg-opacity-90 py-3">
-              <img 
-                   src={`http://localhost:5000/reviews/${currentUser.profilePic}`}
-                   alt="Vous" 
-                className="w-10 h-10 rounded-full"
-              />
-              <input
-                type="text"
-                placeholder="Ajouter un commentaire..."
-                onChange={(e) =>
-{
-  setcommentData(e.target.value)
-  console.log(e.target.value)
-}
-                  }
-                className="flex-1 px-4 py-2 rounded-full bg-gray-700 text-white"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleComment(activeModal.reviewId);
-                    e.target.value = "";
-                  }
-                }}
-              />
-              <Button
-                onClick={() => {
-                  handleComment(activeModal.reviewId);
-                  document.querySelector('#commentInput').value = "";
-                }}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full transition"
-                id="commentInput"
-              >
-                Envoyer
-              </Button>
-            </div>
+            {currentUser && (
+              <div className="flex items-center gap-2 mt-6 sticky bottom-0 bg-black bg-opacity-90 py-3">
+                <img 
+                  src={`http://localhost:5000/reviews/${currentUser.profilePic}`}
+                  alt="Vous" 
+                  className="w-10 h-10 rounded-full"
+                />
+                <input
+                  type="text"
+                  placeholder="Ajouter un commentaire..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  className="flex-1 px-4 py-2 rounded-full bg-gray-700 text-white"
+                  onKeyPress={(e) => e.key === 'Enter' && addComment(activeModal.reviewId)}
+                />
+                <Button
+                  onClick={() => addComment(activeModal.reviewId)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full transition"
+                >
+                  Envoyer
+                </Button>
+              </div>
+            )}
           </BlurContainer>
         </div>
       )}
 
-      {/* Reply Modal */}
       {activeModal.type === 'reply' && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
           <BlurContainer className="w-full max-w-md p-6 rounded-xl bg-black bg-opacity-80">
@@ -527,31 +433,36 @@ const [currentUser , setCurrentUser] = useState()
             <div className="bg-gray-800 p-3 rounded-md mb-4">
               <div className="flex items-start">
                 <img 
-                  src={activeModal.comment.avatar} 
-                  alt={activeModal.comment.user} 
+                  src={`http://localhost:5000/reviews/${activeModal.comment.user.profilePic}`}
+                  alt={activeModal.comment.user.firstName} 
                   className="w-8 h-8 rounded-full mr-2"
                 />
                 <div>
-                  <div className="font-semibold text-sm text-white">{activeModal.comment.user}</div>
+                  <div className="font-semibold text-sm text-white">
+                    {activeModal.comment.user.firstName} {activeModal.comment.user.lastName}
+                  </div>
                   <p className="text-sm text-white">{activeModal.comment.text}</p>
                 </div>
               </div>
             </div>
             
-            <div className="flex items-center gap-2 mb-4">
-              <img 
-                   src={`http://localhost:5000/reviews/${currentUser.profilePic}`}
-                   alt="Vous" 
-                className="w-8 h-8 rounded-full"
-              />
-              <input
-                type="text"
-                placeholder="Écrire une réponse..."
-                id="replyInput"
-                className="flex-1 px-3 py-2 rounded-full bg-gray-700 text-white text-sm"
-                autoFocus
-              />
-            </div>
+            {currentUser && (
+              <div className="flex items-center gap-2 mb-4">
+                <img 
+                  src={`http://localhost:5000/reviews/${currentUser.profilePic}`}
+                  alt="Vous" 
+                  className="w-8 h-8 rounded-full"
+                />
+                <input
+                  type="text"
+                  placeholder="Écrire une réponse..."
+                  id="replyInput"
+                  className="flex-1 px-3 py-2 rounded-full bg-gray-700 text-white text-sm"
+                  autoFocus
+                  onChange={(e) => setCommentText(e.target.value)}
+                />
+              </div>
+            )}
             
             <div className="flex justify-end space-x-2">
               <Button
@@ -563,7 +474,7 @@ const [currentUser , setCurrentUser] = useState()
               <Button
                 onClick={() => {
                   const replyText = document.getElementById('replyInput').value;
-                  handleReply(replyText);
+                  addReply(replyText);
                 }}
                 className="text-sm bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full transition"
               >

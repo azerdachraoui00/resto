@@ -11,5 +11,8 @@ router.get('/getreviews',   rating.getReviews)
 router.get('/me', authMiddleware.protect, authMiddleware.getCurrentUser);
 router.put('/like/:id', authMiddleware.protect, rating.likeReview);
 router.post('/comment/:id', authMiddleware.protect, rating.addComment);
+router.post('/comment/:id/reply/:commentId', authMiddleware.protect, rating.addReply);
+
+
 
 module.exports = router
