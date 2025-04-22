@@ -66,7 +66,7 @@ async function checkTopReviewers() {
 const review = {
   getReviewsByUsers: async (req, res) => {
     try {
-      const reviews = await Review.find({ user: req.user.id })
+      const reviews = await Review.find({ user: req.user.id  , etat: true})
         .populate('user')
         .populate('likes')
         .populate('comments.user')
@@ -81,7 +81,7 @@ const review = {
   } , 
   getReviews: async (req, res) => {
     try {
-      const reviews = await Review.find({})
+      const reviews = await Review.find({etat: true})
         .populate('user')
         .populate('likes')
         .populate('comments.user')
@@ -324,8 +324,153 @@ deleteComment : async (req, res) => {
           error: err.message 
       })
   }
+} , 
+
+updateReply  : async (req, res) => {
+  try {
+    const { id, commentId, replyId } = req.params;
+    const { text } = req.body;
+    if (!text || text.trim().length === 0) {
+      return res.status(400).json({ 
+        status: 'fail',
+        message: 'Le texte de la réponse est requis' 
+      });
+    }
+    const review = await Review.findOneAndUpdate(
+      {
+        _id: id,
+        'comments._id': commentId,
+        'comments.replies._id': replyId,
+        'comments.replies.user': req.user.id 
+      },
+      {
+        $set: {
+          'comments.$[comment].replies.$[reply].text': text,
+          'comments.$[comment].replies.$[reply].updatedAt': new Date()
+        }
+      },
+      {
+        new: true,
+        arrayFilters: [
+          { 'comment._id': commentId },
+          { 'reply._id': replyId }
+        ]
+      }
+    ).populate('comments.replies.user', 'firstName lastName profilePic');
+
+    if (!review) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Réponse non trouvée ou non autorisée'
+      });
+    }
+    const updatedComment = review.comments.find(c => c._id.toString() === commentId);
+    const updatedReply = updatedComment.replies.find(r => r._id.toString() === replyId);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        reply: updatedReply
+      }
+    });
+
+  } catch (err) {
+    console.error('Erreur lors de la mise à jour de la réponse:', err);
+    res.status(500).json({
+      status: 'error',
+      message: 'Une erreur est survenue lors de la mise à jour de la réponse',
+      error: process.env.NODE_ENV === 'development' ? err : undefined
+    });
+  }
+} , 
+deleteReply : async (req, res) => {
+  try {
+    const { id, commentId, replyId } = req.params;
+
+    const review = await Review.findOneAndUpdate(
+      {
+        _id: id,
+        'comments._id': commentId,
+        'comments.replies._id': replyId,
+        'comments.replies.user': req.user.id 
+      },
+      {
+        $pull: {
+          'comments.$[comment].replies': { _id: replyId }
+        },
+        $inc: { 'comments.$[comment].replyCount': -1 }
+      },
+      {
+        new: true,
+        arrayFilters: [
+          { 'comment._id': commentId }
+        ]
+      }
+    );
+
+    if (!review) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Réponse non trouvée ou non autorisée'
+      });
+    }
+
+    res.status(204).json({
+      status: 'success',
+      data: null
+    });
+
+  } catch (err) {
+    console.error('Erreur lors de la suppression de la réponse:', err);
+    res.status(500).json({
+      status: 'error',
+      message: 'Une erreur est survenue lors de la suppression de la réponse',
+    });
+  }
+},
+
+getCommentedReviews : async (req, res) => {
+  try {
+    const reviews = await Review.find({
+      'comments.user': req.user.id
+    })
+    .populate('user', 'firstName lastName profilePic')
+    .populate('comments.user', 'firstName lastName');
+
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+} , 
+getPendingReviews  : async (req, res) => {
+  try {
+    const reviews = await Review.find({ etat: false })
+      .populate('user', 'firstName lastName profilePic')
+      .sort({ createdAt: -1 });
+
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+} , 
+updateReviewState  :  async (req, res) => {
+  try {
+    const { id } = req.params;
+    const review = await Review.findByIdAndUpdate(
+      id,
+      { etat },
+      { new: true }
+    ).populate('user', 'firstName lastName');
+
+    if (!review) {
+      return res.status(404).json({ message: "Review non trouvée" });
+    }
+
+    res.json(review);
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur" });
+  }
 }
-    
 } 
 
 module.exports = review;

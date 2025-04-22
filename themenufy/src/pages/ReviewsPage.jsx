@@ -72,6 +72,10 @@ const ReviewsPage = () => {
     });
   };
 
+
+
+  
+
   const closeModal = () => {
     setActiveModal({
       type: null,
@@ -89,6 +93,7 @@ const ReviewsPage = () => {
       toast.error("Erreur lors du like");
     }
   };
+
 
   const addComment = async (reviewId) => {
     if (!commentText.trim()) return;
@@ -225,6 +230,31 @@ const ReviewsPage = () => {
     }
   };
 
+
+
+
+  const deleteReply = async (reviewId , commentId ,  replyId ) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer cet avis ?")) {
+      try {
+        await axios.delete(
+          `http://localhost:5000/api/review/${reviewId}/comments/${commentId}/replies/${replyId}`,
+          config
+        );
+        getAllReviews();
+        toast.success("Avis supprimé avec succès");
+      } catch (error) {
+        console.error("Error deleting review:", error);
+        toast.error("Erreur lors de la suppression de l'avis");
+      }
+    }
+  };
+
+  const [editingReply, setEditingReply] = useState({
+    reviewId: null,
+    commentId: null,
+    replyId: null,
+    text: ''
+  });
   const getCurrentReview = () => {
     return allreviews.find(r => r._id === activeModal.reviewId);
   };
@@ -491,7 +521,6 @@ const ReviewsPage = () => {
             <div className="space-y-4">
               {getCurrentReview()?.comments.map((comment) => (
                 <div key={comment._id} className="bg-gray-800 p-4 rounded-md relative">
-                  {/* Boutons d'action pour le propriétaire du commentaire */}
                   {comment.user._id === currentUser?._id && (
                     <div className="absolute top-2 right-2 flex space-x-2">
                       <button 
@@ -556,46 +585,53 @@ const ReviewsPage = () => {
                         </button>
                         
                         {comment.replies.length > 0 && (
-                          <div className="ml-6 mt-3 space-y-3">
-                            {comment.replies.map((reply) => (
-                              <div key={reply._id} className="bg-gray-700 p-3 rounded-md relative">
-                                {reply.user._id === currentUser?._id && (
-                                  <div className="absolute top-2 right-2 flex space-x-2">
-                                    <button 
-                                      onClick={() => {
-                                        // Vous pouvez implémenter l'édition des réponses si nécessaire
-                                      }}
-                                      className="text-xs text-gray-400 hover:text-white"
-                                    >
-                                      Modifier
-                                    </button>
-                                    <button 
-                                      onClick={() => {
-                                        // Vous pouvez implémenter la suppression des réponses si nécessaire
-                                      }}
-                                      className="text-xs text-gray-400 hover:text-red-500"
-                                    >
-                                      Supprimer
-                                    </button>
-                                  </div>
-                                )}
-                                <div className="flex items-start">
-                                  <img 
-                                    src={`http://localhost:5000/reviews/${reply.user.profilePic}`}
-                                    alt={reply.user.firstName} 
-                                    className="w-8 h-8 rounded-full mr-2"
-                                  />
-                                  <div>
-                                    <div className="font-semibold text-sm text-white">
-                                      {reply.user.firstName} {reply.user.lastName}
-                                    </div>
-                                    <p className="text-sm text-white mt-1">{reply.text}</p>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+  <div className="ml-6 mt-3 space-y-3">
+    {comment.replies.map((reply) => (
+      <div key={reply._id} className="bg-gray-700 p-3 rounded-md relative">
+        {reply.user._id === currentUser?._id && (
+          <div className="absolute top-2 right-2 flex space-x-2">
+            <button 
+              onClick={() => {
+                setEditingReply({
+                  reviewId: activeModal.reviewId,
+                  commentId: comment._id,
+                  replyId: reply._id,
+                  text: reply.text
+                });
+              }}
+              className="text-xs text-gray-400 hover:text-white"
+            >
+              Modifier
+            </button>
+            <button 
+              onClick={() => {
+                if (window.confirm("Êtes-vous sûr de vouloir supprimer cette réponse ?")) {
+                  deleteReply(activeModal.reviewId, comment._id, reply._id);
+                }
+              }}
+              className="text-xs text-gray-400 hover:text-red-500"
+            >
+              Supprimer
+            </button>
+          </div>
+        )}
+        <div className="flex items-start">
+          <img 
+            src={`http://localhost:5000/reviews/${reply.user.profilePic}`}
+            alt={reply.user.firstName} 
+            className="w-8 h-8 rounded-full mr-2"
+          />
+          <div>
+            <div className="font-semibold text-sm text-white">
+              {reply.user.firstName} {reply.user.lastName}
+            </div>
+            <p className="text-sm text-white mt-1">{reply.text}</p>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
                       </div>
                     </div>
                   )}
@@ -630,7 +666,6 @@ const ReviewsPage = () => {
         </div>
       )}
 
-      {/* Modal de réponse */}
       {activeModal.type === 'reply' && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
           <BlurContainer className="w-full max-w-md p-6 rounded-xl bg-black bg-opacity-80">
@@ -698,8 +733,6 @@ const ReviewsPage = () => {
           </BlurContainer>
         </div>
       )}
-
-      {/* Modal de modification de review */}
       {editingReview && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
           <BlurContainer className="w-full max-w-md p-6 rounded-xl bg-black bg-opacity-80">
@@ -753,7 +786,76 @@ const ReviewsPage = () => {
           </BlurContainer>
         </div>
       )}
+      {/* Modal de modification de réponse */}
+{editingReply.replyId && (
+  <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+    <BlurContainer className="w-full max-w-md p-6 rounded-xl bg-black bg-opacity-80">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-white text-lg font-semibold">Modifier la réponse</h3>
+        <button 
+          onClick={() => setEditingReply({
+            reviewId: null,
+            commentId: null,
+            replyId: null,
+            text: ''
+          })}
+          className="text-white hover:text-gray-300"
+        >
+          <FaTimes />
+        </button>
+      </div>
+      
+      <textarea
+        className="w-full p-2 rounded-md mb-4 bg-gray-800 text-white"
+        value={editingReply.text}
+        onChange={(e) => setEditingReply({...editingReply, text: e.target.value})}
+        autoFocus
+      />
+      
+      <div className="flex justify-end space-x-2">
+        <Button
+          onClick={() => setEditingReply({
+            reviewId: null,
+            commentId: null,
+            replyId: null,
+            text: ''
+          })}
+          className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-full"
+        >
+          Annuler
+        </Button>
+        <Button
+          onClick={async () => {
+            try {
+              await axios.put(
+                `http://localhost:5000/api/review/${editingReply.reviewId}/comments/${editingReply.commentId}/replies/${editingReply.replyId}`,
+                { text: editingReply.text },
+                config
+              );
+              setEditingReply({
+                reviewId: null,
+                commentId: null,
+                replyId: null,
+                text: ''
+              });
+              getAllReviews();
+              toast.success("Réponse modifiée avec succès");
+            } catch (error) {
+              console.error("Error updating reply:", error);
+              toast.error("Erreur lors de la modification de la réponse");
+            }
+          }}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full"
+        >
+          Enregistrer
+        </Button>
+      </div>
+    </BlurContainer>
+  </div>
+)}
     </div>
+
+
   );
 };
 export default ReviewsPage;

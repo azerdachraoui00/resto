@@ -17,6 +17,9 @@ import Test from "./pages/test";
 import ContactPage from "./pages/ContactPage";
 import ServicesPage from "./pages/ServicesPage";
 import ReviewsPage from "./pages/ReviewsPage";
+import Monlist from "./pages/monlist"
+import CommentedReviews from "./pages/CommentedReviews"
+
 const App = () => {
   const location = useLocation(); // Get the current route
 
@@ -43,6 +46,10 @@ const App = () => {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/reviews" element={<ReviewsPage />} />
+          <Route path="/Settings/list" element={<Monlist />} />
+          <Route path="/Settings/CommentedReviews" element={<CommentedReviews />} />
+
+
 
           <Route
             path="/admin"

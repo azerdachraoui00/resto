@@ -19,6 +19,19 @@ router.put('/:id/comments/:commentId', authMiddleware.protect , rating.updateCom
 router.delete('/:id/comments/:commentId', authMiddleware.protect , rating.deleteComment);
 
 
+router.put('/:id/comments/:commentId/replies/:replyId', authMiddleware.protect, rating.updateReply);
+router.delete('/:id/comments/:commentId/replies/:replyId', authMiddleware.protect , rating.deleteReply);
+
+
+router.get('/my-comments',  authMiddleware.protect , rating.getCommentedReviews);
+
+router.get('/pending', authMiddleware.protect , rating.getPendingReviews);
+
+router.put('/:id/state',  authMiddleware.protect, rating.updateReviewState);
+
+
+
+
 
 
 module.exports = router
