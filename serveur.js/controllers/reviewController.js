@@ -111,7 +111,7 @@ const review = {
           });
       
           const review = await newReview.save();
-          await User.findByIdAndUpdate(req.user.id , { 
+          await User.findByIdAndUpdate(req.user.id, { 
             $inc: { reviewCount: 1 } 
           });
           checkTopReviewers().catch(err => {
@@ -265,10 +265,15 @@ const review = {
     try {
         const review = await Review.findOneAndDelete({
             _id: req.params.id,
-        });
+        }).populate('user');
 
-   
-      
+        await User.findByIdAndUpdate(review.user._id, { 
+          $inc: { reviewCount: -1 } 
+        });
+        console.log(User)
+        checkTopReviewers().catch(err => {
+          console.error('Erreur secondaire dans checkTopReviewers:', err);
+        });
         if (!review) {
             return res.status(404).json({ message: "Avis non trouvé ou non autorisé" });
         }
