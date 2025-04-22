@@ -15,6 +15,9 @@ router.post('/comment/:id/reply/:commentId', authMiddleware.protect, rating.addR
 router.put('/:id', authMiddleware.protect, rating.updateReview);
 router.delete('/:id', authMiddleware.protect ,  rating.deleteReview);
 
+router.delete('/delete/:id',  rating.deleteReviewadmin);
+
+
 router.put('/:id/comments/:commentId', authMiddleware.protect , rating.updateComment);
 router.delete('/:id/comments/:commentId', authMiddleware.protect , rating.deleteComment);
 
@@ -25,9 +28,9 @@ router.delete('/:id/comments/:commentId/replies/:replyId', authMiddleware.protec
 
 router.get('/my-comments',  authMiddleware.protect , rating.getCommentedReviews);
 
-router.get('/pending', authMiddleware.protect , rating.getPendingReviews);
+router.get('/pending', rating.getPendingReviews);
 
-router.put('/:id/state',  authMiddleware.protect, rating.updateReviewState);
+router.put('/:id/state', rating.updateReviewState);
 
 
 

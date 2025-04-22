@@ -111,7 +111,7 @@ const review = {
           });
       
           const review = await newReview.save();
-          await User.findByIdAndUpdate(req.user.id, { 
+          await User.findByIdAndUpdate(req.user.id , { 
             $inc: { reviewCount: 1 } 
           });
           checkTopReviewers().catch(err => {
@@ -258,6 +258,30 @@ const review = {
           res.status(500).json({ message: "Erreur lors de la suppression de l'avis" });
       }
   } , 
+
+
+
+  deleteReviewadmin  : async (req, res) => {
+    try {
+        const review = await Review.findOneAndDelete({
+            _id: req.params.id,
+        });
+
+   
+      
+        if (!review) {
+            return res.status(404).json({ message: "Avis non trouvé ou non autorisé" });
+        }
+
+
+
+        res.json({ message: "Avis supprimé avec succès" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Erreur lors de la suppression de l'avis" });
+    }
+} , 
+
 
   updateComment : async (req, res) => {
     try {
@@ -458,7 +482,7 @@ updateReviewState  :  async (req, res) => {
     const { id } = req.params;
     const review = await Review.findByIdAndUpdate(
       id,
-      { etat },
+      { etat : true  },
       { new: true }
     ).populate('user', 'firstName lastName');
 

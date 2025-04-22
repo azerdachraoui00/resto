@@ -18,7 +18,7 @@ export const MenuList = [
                 to: 'order-id',
             },
             {
-                title: 'Customers',
+                title: 'List Reviews',
                 to: 'general-customers',                
             },
             {
