@@ -28,6 +28,14 @@ const userSchema = new mongoose.Schema({
 
       default: 'default.jpg'
    },
+   isTopReviewer: {
+    type: Boolean,
+    default: false
+  },
+  reviewCount: {
+    type: Number,
+    default: 0
+  } , 
    
   // 🔹 Password Reset Fields
   resetToken: { type: String },
