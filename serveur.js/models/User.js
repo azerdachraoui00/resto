@@ -28,6 +28,7 @@ const userSchema = new mongoose.Schema({
 
       default: 'default.jpg'
    },
+   
    isTopReviewer: {
     type: Boolean,
     default: false

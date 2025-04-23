@@ -25,16 +25,22 @@ const ReviewsPage = () => {
   const [editReviewText, setEditReviewText] = useState("");
   const [editRating, setEditRating] = useState(0);
 
+
+
   const accessToken = localStorage.getItem('token');
+
+
   const config = {
     headers: {
       'Authorization': `Bearer ${accessToken}`, 
     }
   };
 
+
   const getAllReviews = async () => {
     try {
       const response = await axios.get("http://localhost:5000/api/review/getreviews", config);
+      console.log(response.data)
       setAllReviews(response.data);
     } catch (error) {
       console.error("Error fetching reviews:", error);
@@ -72,10 +78,6 @@ const ReviewsPage = () => {
     });
   };
 
-
-
-  
-
   const closeModal = () => {
     setActiveModal({
       type: null,
@@ -93,7 +95,6 @@ const ReviewsPage = () => {
       toast.error("Erreur lors du like");
     }
   };
-
 
   const addComment = async (reviewId) => {
     if (!commentText.trim()) return;
@@ -278,7 +279,13 @@ const ReviewsPage = () => {
               className="w-full p-2 rounded-md mb-2 bg-gray-800 text-white"
               placeholder="Décrivez votre expérience..."
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => 
+              {
+                setDescription(e.target.value)
+                console.log(e.target.value)
+
+              } 
+            }
             />
             <input
               type="file"

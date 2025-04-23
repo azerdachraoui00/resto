@@ -79,6 +79,8 @@ const review = {
       res.status(500).send('Server error');
     }
   } , 
+
+
   getReviews: async (req, res) => {
     try {
       const reviews = await Review.find({etat: true})
@@ -114,6 +116,7 @@ const review = {
           await User.findByIdAndUpdate(req.user.id, { 
             $inc: { reviewCount: 1 } 
           });
+
           checkTopReviewers().catch(err => {
             console.error('Erreur secondaire dans checkTopReviewers:', err);
           });
@@ -471,6 +474,8 @@ getCommentedReviews : async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 } , 
+
+
 getPendingReviews  : async (req, res) => {
   try {
     const reviews = await Review.find({ etat: false })
@@ -482,6 +487,7 @@ getPendingReviews  : async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 } , 
+
 updateReviewState  :  async (req, res) => {
   try {
     const { id } = req.params;

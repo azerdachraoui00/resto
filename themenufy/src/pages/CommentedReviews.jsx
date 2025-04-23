@@ -12,6 +12,7 @@ const ReviewsPage = () => {
     reviewId: null,
     comment: null
   });
+  
   const [currentUser, setCurrentUser] = useState(null);
   const [commentText, setCommentText] = useState("");
     const [editingComment, setEditingComment] = useState(null);
